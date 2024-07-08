@@ -1,5 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Autocomplete, TextField, ThemeProvider, createTheme, Typography, Box, IconButton } from '@mui/material';
+import {
+  Autocomplete,
+  TextField,
+  ThemeProvider,
+  createTheme,
+  Typography,
+  Box,
+  IconButton,
+  Checkbox,
+  FormControlLabel,
+} from '@mui/material';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider, DateCalendar, DatePicker } from '@mui/x-date-pickers';
 import NexusLocation, { locations } from '../data/Locations';
@@ -32,6 +42,7 @@ export default function Home() {
   const [selectedDate, setSelectedDate] = useState<Dayjs | null>(null);
   const [fromDate, setFromDate] = useState<Dayjs | null>(null);
   const [toDate, setToDate] = useState<Dayjs | null>(null);
+  const [checkEveryMinute, setCheckEveryMinute] = useState(false);
 
   const minDate = dayjs().startOf('day');
   const maxDate = dayjs().add(1, 'year').endOf('day');
@@ -51,6 +62,16 @@ export default function Home() {
     }
   }, [timeSlots]);
 
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (checkEveryMinute && selectedLocation) {
+      interval = setInterval(() => {
+        fetchTimeSlots(selectedLocation.id);
+      }, 60000);
+    }
+    return () => clearInterval(interval);
+  }, [checkEveryMinute, selectedLocation]);
+
   const fetchTimeSlots = async (locationId: number) => {
     try {
       const response = await fetch(
@@ -64,8 +85,29 @@ export default function Home() {
       );
       const data = await response.json();
       setTimeSlots(data);
+      checkAndNotify(data);
     } catch (error) {
       console.error('Error fetching time slots:', error);
+    }
+  };
+
+  const checkAndNotify = (slots: TimeSlot[]) => {
+    const availableSlots = slots.filter(
+      (slot) =>
+        (!fromDate || dayjs(slot.startTimestamp).isSameOrAfter(fromDate, 'day')) &&
+        (!toDate || dayjs(slot.startTimestamp).isSameOrBefore(toDate, 'day'))
+    );
+
+    if (availableSlots.length > 0) {
+      if ('Notification' in window) {
+        Notification.requestPermission().then((permission) => {
+          if (permission === 'granted') {
+            new Notification('Nexus Interview Slots Available', {
+              body: 'New interview slots are available in your selected date range.',
+            });
+          }
+        });
+      }
     }
   };
 
@@ -121,6 +163,10 @@ export default function Home() {
               )}
             </Box>
           </Box>
+          <FormControlLabel
+            control={<Checkbox checked={checkEveryMinute} onChange={(e) => setCheckEveryMinute(e.target.checked)} />}
+            label="Check Every Minute and Notify Me of New Slots"
+          />
           {selectedLocation &&
             (availableSlots.length > 0 ? (
               <Box>
