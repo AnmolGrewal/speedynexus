@@ -216,6 +216,7 @@ export default function Home() {
           onChange={(_, newValue) => handleLocationChange(newValue)}
           className="w-[415px] mb-4"
           value={selectedLocation}
+          isOptionEqualToValue={(option, value) => option.id === value.id}
         />
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <Box className="flex justify-center mb-4">
