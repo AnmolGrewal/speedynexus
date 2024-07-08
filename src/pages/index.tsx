@@ -49,12 +49,15 @@ export default function Home() {
 
   const fetchTimeSlots = async (locationId: number) => {
     try {
-      const response = await fetch(`https://ttp.cbp.dhs.gov/schedulerapi/slots?orderBy=soonest&limit=9999999&locationId=${locationId}&minimum=1`, {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-        },
-      });
+      const response = await fetch(
+        `https://ttp.cbp.dhs.gov/schedulerapi/slots?orderBy=soonest&limit=9999999&locationId=${locationId}&minimum=1`,
+        {
+          method: 'GET',
+          headers: {
+            Accept: 'application/json',
+          },
+        }
+      );
       const data = await response.json();
       setTimeSlots(data);
     } catch (error) {
@@ -62,17 +65,18 @@ export default function Home() {
     }
   };
 
-  const availableSlots = timeSlots.filter(slot => 
-    (!fromDate || dayjs(slot.startTimestamp).isSameOrAfter(fromDate, 'day')) &&
-    (!toDate || dayjs(slot.startTimestamp).isSameOrBefore(toDate, 'day'))
+  const availableSlots = timeSlots.filter(
+    (slot) =>
+      (!fromDate || dayjs(slot.startTimestamp).isSameOrAfter(fromDate, 'day')) &&
+      (!toDate || dayjs(slot.startTimestamp).isSameOrBefore(toDate, 'day'))
   );
 
   return (
     <ThemeProvider theme={darkTheme}>
       <Box className="p-4" display="flex" flexDirection="column" alignItems="center">
-      <Typography variant="h3" align="center" gutterBottom>
-      Nexus Interview Availability
-    </Typography>
+        <Typography variant="h3" align="center" gutterBottom>
+          Nexus Interview Availability
+        </Typography>
         <Autocomplete
           options={locations}
           getOptionLabel={(option) => option.name}
@@ -88,15 +92,10 @@ export default function Home() {
               onChange={(newValue) => setFromDate(newValue)}
               sx={{ width: 200, marginRight: 2 }}
             />
-            <DatePicker
-              label="To Date"
-              value={toDate}
-              onChange={(newValue) => setToDate(newValue)}
-              sx={{ width: 200 }}
-            />
+            <DatePicker label="To Date" value={toDate} onChange={(newValue) => setToDate(newValue)} sx={{ width: 200 }} />
           </Box>
-          {selectedLocation && (
-            availableSlots.length > 0 ? (
+          {selectedLocation &&
+            (availableSlots.length > 0 ? (
               <Box>
                 <Typography variant="h5" align="center" gutterBottom>
                   {selectedDate?.format('MMMM D, YYYY')}
@@ -106,7 +105,7 @@ export default function Home() {
                   minDate={fromDate || dayjs().startOf('day')}
                   maxDate={toDate || dayjs().add(1, 'year').endOf('day')}
                   shouldDisableDate={(date) => {
-                    return !availableSlots.some(slot => dayjs(slot.startTimestamp).isSame(date, 'day'));
+                    return !availableSlots.some((slot) => dayjs(slot.startTimestamp).isSame(date, 'day'));
                   }}
                   value={selectedDate}
                   onChange={(newDate) => setSelectedDate(newDate)}
@@ -117,8 +116,8 @@ export default function Home() {
                   </Typography>
                   <ul style={{ listStyle: 'none', padding: 0, textAlign: 'center' }}>
                     {availableSlots
-                      .filter(slot => dayjs(slot.startTimestamp).isSame(selectedDate, 'day'))
-                      .map(slot => (
+                      .filter((slot) => dayjs(slot.startTimestamp).isSame(selectedDate, 'day'))
+                      .map((slot) => (
                         <li key={slot.startTimestamp}>
                           {dayjs(slot.startTimestamp).format('h:mm A')} - {dayjs(slot.endTimestamp).format('h:mm A')}
                         </li>
@@ -130,8 +129,7 @@ export default function Home() {
               <Typography variant="h4" align="center">
                 No Dates Currently Available
               </Typography>
-            )
-          )}
+            ))}
         </LocalizationProvider>
       </Box>
     </ThemeProvider>
