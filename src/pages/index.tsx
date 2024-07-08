@@ -205,7 +205,7 @@ export default function Home() {
       <Helmet>
         <title>Speedy Nexus</title>
       </Helmet>
-      <Box className="p-4 flex flex-col items-center">
+      <Box className="p-4 flex flex-col items-center mb-4">
         <Typography variant="h3" align="center" gutterBottom>
           Nexus Interview Availability
         </Typography>
