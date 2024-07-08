@@ -47,6 +47,8 @@ export default function Home() {
   const [checkEveryMinute, setCheckEveryMinute] = useState(false);
   const [lastRefreshTime, setLastRefreshTime] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [currentSelectedDate, setCurrentSelectedDate] = useState<Dayjs | null>(null);
+  const [openAccordions, setOpenAccordions] = useState<Record<string, boolean>>({});
 
   const minDate = dayjs().startOf('day');
   const maxDate = dayjs().add(1, 'year').endOf('day');
@@ -160,12 +162,17 @@ export default function Home() {
     setLastRefreshTime(currentTime);
 
     if (selectedLocation) {
-      fetchTimeSlots(selectedLocation.id);
+      fetchTimeSlots(selectedLocation.id).then(() => {
+        if (currentSelectedDate && availableSlots.some((slot) => dayjs(slot.startTimestamp).isSame(currentSelectedDate, 'day'))) {
+          setSelectedDate(currentSelectedDate);
+        } else if (availableSlots.length > 0) {
+          setSelectedDate(dayjs(availableSlots[0].startTimestamp));
+        } else {
+          setSelectedDate(null);
+        }
+        setIsRefreshing(false);
+      });
     }
-
-    setTimeout(() => {
-      setIsRefreshing(false);
-    }, 15000);
   };
 
   const availableSlots = timeSlots.filter(
@@ -173,6 +180,22 @@ export default function Home() {
       (!fromDate || dayjs(slot.startTimestamp).isSameOrAfter(fromDate, 'day')) &&
       (!toDate || dayjs(slot.startTimestamp).isSameOrBefore(toDate, 'day'))
   );
+
+  const groupedSlots = availableSlots
+    .filter((slot) => dayjs(slot.startTimestamp).isSame(selectedDate, 'day'))
+    .reduce(
+      (acc, slot) => {
+        const hour = dayjs(slot.startTimestamp).format('HH');
+        if (!acc[hour]) acc[hour] = [];
+        acc[hour].push(slot);
+        return acc;
+      },
+      {} as Record<string, TimeSlot[]>
+    );
+
+  const toggleAccordion = (hour: string) => {
+    setOpenAccordions((prev) => ({ ...prev, [hour]: !prev[hour] }));
+  };
 
   return (
     <ThemeProvider theme={darkTheme}>
@@ -252,21 +275,32 @@ export default function Home() {
                     return !availableSlots.some((slot) => dayjs(slot.startTimestamp).isSame(date, 'day'));
                   }}
                   value={selectedDate}
-                  onChange={(newDate) => setSelectedDate(newDate)}
+                  onChange={(newDate) => {
+                    setSelectedDate(newDate);
+                    setCurrentSelectedDate(newDate);
+                  }}
                 />
-                <Box className="mt-4">
+                <Box className="mt-4 flex flex-col items-center">
                   <Typography variant="h6" align="center" gutterBottom>
                     Available Times
                   </Typography>
-                  <ul className="list-none p-0 text-center">
-                    {availableSlots
-                      .filter((slot) => dayjs(slot.startTimestamp).isSame(selectedDate, 'day'))
-                      .map((slot) => (
-                        <li key={slot.startTimestamp}>
-                          {dayjs(slot.startTimestamp).format('h:mm A')} - {dayjs(slot.endTimestamp).format('h:mm A')}
-                        </li>
-                      ))}
-                  </ul>
+                  {Object.entries(groupedSlots).map(([hour, slots]) => (
+                    <Box key={hour} className="w-full max-w-md mb-2">
+                      <Button onClick={() => toggleAccordion(hour)} fullWidth variant="outlined" className="justify-between">
+                        <span>{dayjs().hour(parseInt(hour)).format('h A')}</span>
+                        <span>{slots.length} available</span>
+                      </Button>
+                      {openAccordions[hour] && (
+                        <Box className="mt-2 pl-4">
+                          {slots.map((slot) => (
+                            <Typography key={slot.startTimestamp} align="center">
+                              {dayjs(slot.startTimestamp).format('h:mm A')} - {dayjs(slot.endTimestamp).format('h:mm A')}
+                            </Typography>
+                          ))}
+                        </Box>
+                      )}
+                    </Box>
+                  ))}
                 </Box>
               </Box>
             ) : (
