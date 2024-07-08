@@ -208,7 +208,7 @@ export default function Home() {
           </Box>
           <FormControlLabel
             control={<Checkbox checked={checkEveryMinute} onChange={handleCheckboxChange} />}
-            label="Check Every 1min and notify me"
+            label="Check Every Minute and Notify Me"
           />
           {selectedLocation &&
             (availableSlots.length > 0 ? (
