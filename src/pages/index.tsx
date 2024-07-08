@@ -9,6 +9,7 @@ import {
   IconButton,
   Checkbox,
   FormControlLabel,
+  Button,
 } from '@mui/material';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider, DateCalendar, DatePicker } from '@mui/x-date-pickers';
@@ -17,6 +18,7 @@ import dayjs, { Dayjs } from 'dayjs';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import ClearIcon from '@mui/icons-material/Clear';
+import RefreshIcon from '@mui/icons-material/Refresh';
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
@@ -43,6 +45,8 @@ export default function Home() {
   const [fromDate, setFromDate] = useState<Dayjs | null>(null);
   const [toDate, setToDate] = useState<Dayjs | null>(null);
   const [checkEveryMinute, setCheckEveryMinute] = useState(false);
+  const [lastRefreshTime, setLastRefreshTime] = useState(0);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const minDate = dayjs().startOf('day');
   const maxDate = dayjs().add(1, 'year').endOf('day');
@@ -104,7 +108,7 @@ export default function Home() {
   };
 
   const checkAndNotify = (slots: TimeSlot[]) => {
-    if (!checkEveryMinute) return; // Exit if checkbox is not checked
+    if (!checkEveryMinute) return;
 
     const availableSlots = slots.filter(
       (slot) =>
@@ -143,6 +147,25 @@ export default function Home() {
   const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setCheckEveryMinute(event.target.checked);
     localStorage.setItem('checkEveryMinute', JSON.stringify(event.target.checked));
+  };
+
+  const handleRefresh = () => {
+    const currentTime = Date.now();
+    if (currentTime - lastRefreshTime < 15000) {
+      alert('You must wait at least 15 seconds between refreshes.');
+      return;
+    }
+
+    setIsRefreshing(true);
+    setLastRefreshTime(currentTime);
+
+    if (selectedLocation) {
+      fetchTimeSlots(selectedLocation.id);
+    }
+
+    setTimeout(() => {
+      setIsRefreshing(false);
+    }, 15000);
   };
 
   const availableSlots = timeSlots.filter(
@@ -208,14 +231,19 @@ export default function Home() {
           </Box>
           <FormControlLabel
             control={<Checkbox checked={checkEveryMinute} onChange={handleCheckboxChange} />}
-            label="Check Every Minute and Notify Me"
+            label="Check Every 1min and notify me"
           />
           {selectedLocation &&
             (availableSlots.length > 0 ? (
               <Box>
-                <Typography variant="h5" align="center" gutterBottom>
-                  {selectedDate?.format('MMMM D, YYYY')}
-                </Typography>
+                <Box display="flex" alignItems="center" justifyContent="center" mb={2}>
+                  <Typography variant="h5" align="center">
+                    {selectedDate?.format('MMMM D, YYYY')}
+                  </Typography>
+                  <IconButton onClick={handleRefresh} disabled={isRefreshing}>
+                    <RefreshIcon />
+                  </IconButton>
+                </Box>
                 <DateCalendar
                   className="w-[400px] h-[400px]"
                   minDate={fromDate || minDate}
