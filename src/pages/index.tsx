@@ -10,6 +10,7 @@ import {
   Checkbox,
   FormControlLabel,
   Button,
+  Link,
 } from '@mui/material';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider, DateCalendar, DatePicker } from '@mui/x-date-pickers';
@@ -19,6 +20,7 @@ import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import ClearIcon from '@mui/icons-material/Clear';
 import RefreshIcon from '@mui/icons-material/Refresh';
+import CoffeeIcon from '@mui/icons-material/LocalCafe';
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
@@ -309,6 +311,19 @@ export default function Home() {
               </Typography>
             ))}
         </LocalizationProvider>
+      </Box>
+      <Box component="footer" className="py-2 text-center bg-secondary-background-color">
+        <Typography variant="body2" color="text.secondary">
+          Creater: MetaMulligan -
+          <Link
+            href="https://buymeacoffee.com/metamulligan"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center ml-1 text-image-sun-color"
+          >
+            Buy me a coffee <CoffeeIcon className="ml-0.5" />
+          </Link>
+        </Typography>
       </Box>
     </ThemeProvider>
   );
