@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Autocomplete, TextField, ThemeProvider, createTheme, Typography, Box } from '@mui/material';
+import { Autocomplete, TextField, ThemeProvider, createTheme, Typography, Box, IconButton } from '@mui/material';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider, DateCalendar, DatePicker } from '@mui/x-date-pickers';
 import NexusLocation, { locations } from '../data/Locations';
 import dayjs, { Dayjs } from 'dayjs';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
+import ClearIcon from '@mui/icons-material/Clear';
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
@@ -31,6 +32,9 @@ export default function Home() {
   const [selectedDate, setSelectedDate] = useState<Dayjs | null>(null);
   const [fromDate, setFromDate] = useState<Dayjs | null>(null);
   const [toDate, setToDate] = useState<Dayjs | null>(null);
+
+  const minDate = dayjs().startOf('day');
+  const maxDate = dayjs().add(1, 'year').endOf('day');
 
   useEffect(() => {
     if (selectedLocation) {
@@ -73,7 +77,7 @@ export default function Home() {
 
   return (
     <ThemeProvider theme={darkTheme}>
-      <Box className="p-4" display="flex" flexDirection="column" alignItems="center">
+      <Box className="p-4 flex flex-col items-center">
         <Typography variant="h3" align="center" gutterBottom>
           Nexus Interview Availability
         </Typography>
@@ -82,17 +86,40 @@ export default function Home() {
           getOptionLabel={(option) => option.name}
           renderInput={(params) => <TextField {...params} label="Select Location" />}
           onChange={(_, newValue) => setSelectedLocation(newValue)}
-          sx={{ width: 415, marginBottom: 2 }}
+          className="w-[415px] mb-4"
         />
         <LocalizationProvider dateAdapter={AdapterDayjs}>
-          <Box display="flex" justifyContent="center" mb={2}>
-            <DatePicker
-              label="From Date"
-              value={fromDate}
-              onChange={(newValue) => setFromDate(newValue)}
-              sx={{ width: 200, marginRight: 2 }}
-            />
-            <DatePicker label="To Date" value={toDate} onChange={(newValue) => setToDate(newValue)} sx={{ width: 200 }} />
+          <Box className="flex justify-center mb-4">
+            <Box className="relative mr-4">
+              <DatePicker
+                label="From Date"
+                value={fromDate}
+                onChange={(newValue) => setFromDate(newValue)}
+                minDate={minDate}
+                maxDate={maxDate}
+                className="w-[200px]"
+              />
+              {fromDate && (
+                <IconButton size="small" className="absolute right-10 top-1/2 transform -translate-y-1/2" onClick={() => setFromDate(null)}>
+                  <ClearIcon fontSize="small" />
+                </IconButton>
+              )}
+            </Box>
+            <Box className="relative">
+              <DatePicker
+                label="To Date"
+                value={toDate}
+                onChange={(newValue) => setToDate(newValue)}
+                minDate={minDate}
+                maxDate={maxDate}
+                className="w-[200px]"
+              />
+              {toDate && (
+                <IconButton size="small" className="absolute right-10 top-1/2 transform -translate-y-1/2" onClick={() => setToDate(null)}>
+                  <ClearIcon fontSize="small" />
+                </IconButton>
+              )}
+            </Box>
           </Box>
           {selectedLocation &&
             (availableSlots.length > 0 ? (
@@ -101,20 +128,20 @@ export default function Home() {
                   {selectedDate?.format('MMMM D, YYYY')}
                 </Typography>
                 <DateCalendar
-                  sx={{ width: 400, height: 400 }}
-                  minDate={fromDate || dayjs().startOf('day')}
-                  maxDate={toDate || dayjs().add(1, 'year').endOf('day')}
+                  className="w-[400px] h-[400px]"
+                  minDate={fromDate || minDate}
+                  maxDate={toDate || maxDate}
                   shouldDisableDate={(date) => {
                     return !availableSlots.some((slot) => dayjs(slot.startTimestamp).isSame(date, 'day'));
                   }}
                   value={selectedDate}
                   onChange={(newDate) => setSelectedDate(newDate)}
                 />
-                <Box mt={2}>
+                <Box className="mt-4">
                   <Typography variant="h6" align="center" gutterBottom>
                     Available Times
                   </Typography>
-                  <ul style={{ listStyle: 'none', padding: 0, textAlign: 'center' }}>
+                  <ul className="list-none p-0 text-center">
                     {availableSlots
                       .filter((slot) => dayjs(slot.startTimestamp).isSame(selectedDate, 'day'))
                       .map((slot) => (
