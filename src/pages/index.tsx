@@ -104,6 +104,8 @@ export default function Home() {
   };
 
   const checkAndNotify = (slots: TimeSlot[]) => {
+    if (!checkEveryMinute) return; // Exit if checkbox is not checked
+
     const availableSlots = slots.filter(
       (slot) =>
         (!fromDate || dayjs(slot.startTimestamp).isSameOrAfter(fromDate, 'day')) &&
