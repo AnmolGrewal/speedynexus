@@ -21,6 +21,7 @@ import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import ClearIcon from '@mui/icons-material/Clear';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import CoffeeIcon from '@mui/icons-material/LocalCafe';
+import { Helmet } from 'react-helmet';
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
@@ -201,6 +202,9 @@ export default function Home() {
 
   return (
     <ThemeProvider theme={darkTheme}>
+      <Helmet>
+        <title>Speedy Nexus</title>
+      </Helmet>
       <Box className="p-4 flex flex-col items-center">
         <Typography variant="h3" align="center" gutterBottom>
           Nexus Interview Availability
