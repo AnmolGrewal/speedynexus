@@ -1,16 +1,18 @@
-import '../../src/app/globals.css';
+import '../app/globals.css';
 import type { AppProps } from 'next/app';
-import { useRouter } from 'next/router';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+
+const darkTheme = createTheme({
+  palette: {
+    mode: 'dark',
+  },
+});
 
 function MyApp({ Component, pageProps }: AppProps) {
-  const router = useRouter();
-
   return (
-    <div className="flex flex-col min-h-screen bg-primary-background-color">
-      <main className="flex-grow">
-        <Component {...pageProps} />
-      </main>
-    </div>
+    <ThemeProvider theme={darkTheme}>
+      <Component {...pageProps} />
+    </ThemeProvider>
   );
 }
 

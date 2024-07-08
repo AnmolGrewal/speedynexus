@@ -1,18 +1,11 @@
-interface Location {
+interface NexusLocation {
   id: number;
   name: string;
   address: string;
   region: string;
 }
 
-interface Location {
-  id: number;
-  name: string;
-  address: string;
-  region: string;
-}
-
-export const locations: Location[] = [
+export const locations: NexusLocation[] = [
   {
     id: 5500,
     name: "Calais Enrollment Center",
