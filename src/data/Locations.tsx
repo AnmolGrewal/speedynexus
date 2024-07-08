@@ -121,3 +121,5 @@ export const locations: NexusLocation[] = [
     region: "Ontario"
   }
 ];
+
+export default NexusLocation;
