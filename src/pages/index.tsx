@@ -312,16 +312,37 @@ export default function Home() {
             ))}
         </LocalizationProvider>
       </Box>
-      <Box component="footer" className="py-2 text-center bg-secondary-background-color">
-        <Typography variant="body2" color="text.secondary">
-          Creater: MetaMulligan -
+      <Box
+        component="footer"
+        sx={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          backgroundColor: 'var(--secondary-background-color)',
+          color: 'var(--primary-text-color)',
+          padding: '8px',
+          textAlign: 'center',
+          zIndex: 1000,
+        }}
+      >
+        <Typography variant="body2">
+          MetaMulligan -
           <Link
             href="https://buymeacoffee.com/metamulligan"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center ml-1 text-image-sun-color"
+            sx={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              ml: 1,
+              color: 'inherit',
+              '&:hover': {
+                color: 'var(--primary-text-color-opacity)',
+              },
+            }}
           >
-            Buy me a coffee <CoffeeIcon className="ml-0.5" />
+            Buy me a coffee <CoffeeIcon sx={{ ml: 0.5 }} />
           </Link>
         </Typography>
       </Box>
