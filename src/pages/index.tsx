@@ -48,6 +48,18 @@ export default function Home() {
   const maxDate = dayjs().add(1, 'year').endOf('day');
 
   useEffect(() => {
+    const storedLocation = localStorage.getItem('selectedLocation');
+    const storedFromDate = localStorage.getItem('fromDate');
+    const storedToDate = localStorage.getItem('toDate');
+    const storedCheckEveryMinute = localStorage.getItem('checkEveryMinute');
+
+    if (storedLocation) setSelectedLocation(JSON.parse(storedLocation));
+    if (storedFromDate) setFromDate(dayjs(storedFromDate));
+    if (storedToDate) setToDate(dayjs(storedToDate));
+    if (storedCheckEveryMinute) setCheckEveryMinute(JSON.parse(storedCheckEveryMinute));
+  }, []);
+
+  useEffect(() => {
     if (selectedLocation) {
       fetchTimeSlots(selectedLocation.id);
     }
@@ -111,6 +123,26 @@ export default function Home() {
     }
   };
 
+  const handleLocationChange = (newValue: NexusLocation | null) => {
+    setSelectedLocation(newValue);
+    localStorage.setItem('selectedLocation', JSON.stringify(newValue));
+  };
+
+  const handleFromDateChange = (newValue: Dayjs | null) => {
+    setFromDate(newValue);
+    localStorage.setItem('fromDate', newValue ? newValue.toISOString() : '');
+  };
+
+  const handleToDateChange = (newValue: Dayjs | null) => {
+    setToDate(newValue);
+    localStorage.setItem('toDate', newValue ? newValue.toISOString() : '');
+  };
+
+  const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setCheckEveryMinute(event.target.checked);
+    localStorage.setItem('checkEveryMinute', JSON.stringify(event.target.checked));
+  };
+
   const availableSlots = timeSlots.filter(
     (slot) =>
       (!fromDate || dayjs(slot.startTimestamp).isSameOrAfter(fromDate, 'day')) &&
@@ -127,8 +159,9 @@ export default function Home() {
           options={locations}
           getOptionLabel={(option) => option.name}
           renderInput={(params) => <TextField {...params} label="Select Location" />}
-          onChange={(_, newValue) => setSelectedLocation(newValue)}
+          onChange={(_, newValue) => handleLocationChange(newValue)}
           className="w-[415px] mb-4"
+          value={selectedLocation}
         />
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <Box className="flex justify-center mb-4">
@@ -136,13 +169,17 @@ export default function Home() {
               <DatePicker
                 label="From Date"
                 value={fromDate}
-                onChange={(newValue) => setFromDate(newValue)}
+                onChange={handleFromDateChange}
                 minDate={minDate}
                 maxDate={maxDate}
                 className="w-[200px]"
               />
               {fromDate && (
-                <IconButton size="small" className="absolute right-10 top-1/2 transform -translate-y-1/2" onClick={() => setFromDate(null)}>
+                <IconButton
+                  size="small"
+                  className="absolute right-10 top-1/2 transform -translate-y-1/2"
+                  onClick={() => handleFromDateChange(null)}
+                >
                   <ClearIcon fontSize="small" />
                 </IconButton>
               )}
@@ -151,21 +188,25 @@ export default function Home() {
               <DatePicker
                 label="To Date"
                 value={toDate}
-                onChange={(newValue) => setToDate(newValue)}
+                onChange={handleToDateChange}
                 minDate={minDate}
                 maxDate={maxDate}
                 className="w-[200px]"
               />
               {toDate && (
-                <IconButton size="small" className="absolute right-10 top-1/2 transform -translate-y-1/2" onClick={() => setToDate(null)}>
+                <IconButton
+                  size="small"
+                  className="absolute right-10 top-1/2 transform -translate-y-1/2"
+                  onClick={() => handleToDateChange(null)}
+                >
                   <ClearIcon fontSize="small" />
                 </IconButton>
               )}
             </Box>
           </Box>
           <FormControlLabel
-            control={<Checkbox checked={checkEveryMinute} onChange={(e) => setCheckEveryMinute(e.target.checked)} />}
-            label="Check Every Minute and Notify Me of New Slots"
+            control={<Checkbox checked={checkEveryMinute} onChange={handleCheckboxChange} />}
+            label="Check Every 1min and notify me"
           />
           {selectedLocation &&
             (availableSlots.length > 0 ? (
