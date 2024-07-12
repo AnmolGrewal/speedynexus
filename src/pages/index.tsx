@@ -188,12 +188,12 @@ export default function Home() {
     .filter((slot) => dayjs(slot.startTimestamp).isSame(selectedDate, 'day'))
     .reduce(
       (acc, slot) => {
-        const hour = dayjs(slot.startTimestamp).format('HH');
+        const hour = parseInt(dayjs(slot.startTimestamp).format('H'));
         if (!acc[hour]) acc[hour] = [];
         acc[hour].push(slot);
         return acc;
       },
-      {} as Record<string, TimeSlot[]>
+      {} as Record<number, TimeSlot[]>
     );
 
   const toggleAccordion = (hour: string) => {
@@ -291,23 +291,25 @@ export default function Home() {
                   <Typography variant="h6" align="center" gutterBottom>
                     Available Times
                   </Typography>
-                  {Object.entries(groupedSlots).map(([hour, slots]) => (
-                    <Box key={hour} className="w-full max-w-md mb-2">
-                      <Button onClick={() => toggleAccordion(hour)} fullWidth variant="outlined" className="justify-between">
-                        <span>{dayjs().hour(parseInt(hour)).format('h A')}</span>
-                        <span>{slots.length} available</span>
-                      </Button>
-                      {openAccordions[hour] && (
-                        <Box className="mt-2 pl-4">
-                          {slots.map((slot) => (
-                            <Typography key={slot.startTimestamp} align="center">
-                              {dayjs(slot.startTimestamp).format('h:mm A')} - {dayjs(slot.endTimestamp).format('h:mm A')}
-                            </Typography>
-                          ))}
-                        </Box>
-                      )}
-                    </Box>
-                  ))}
+                  {Object.entries(groupedSlots)
+                    .sort(([hourA], [hourB]) => parseInt(hourA) - parseInt(hourB))
+                    .map(([hour, slots]) => (
+                      <Box key={hour} className="w-full max-w-md mb-2">
+                        <Button onClick={() => toggleAccordion(hour)} fullWidth variant="outlined" className="justify-between">
+                          <span>{dayjs().hour(parseInt(hour)).format('h A')}</span>
+                          <span>{slots.length} available</span>
+                        </Button>
+                        {openAccordions[hour] && (
+                          <Box className="mt-2 pl-4">
+                            {slots.map((slot) => (
+                              <Typography key={slot.startTimestamp} align="center">
+                                {dayjs(slot.startTimestamp).format('h:mm A')} - {dayjs(slot.endTimestamp).format('h:mm A')}
+                              </Typography>
+                            ))}
+                          </Box>
+                        )}
+                      </Box>
+                    ))}
                 </Box>
               </Box>
             ) : (
