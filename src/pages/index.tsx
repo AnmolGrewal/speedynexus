@@ -203,11 +203,11 @@ export default function Home() {
   return (
     <ThemeProvider theme={darkTheme}>
       <Helmet>
-        <title>Speedy Nexus</title>
+        <title>Speedy NEXUS</title>
       </Helmet>
       <Box className="p-4 flex flex-col items-center mb-4">
         <Typography variant="h3" align="center" gutterBottom>
-          Nexus Interview Availability
+          NEXUS Interview Availability
         </Typography>
         <Autocomplete
           options={locations}
