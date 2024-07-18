@@ -21,6 +21,7 @@ import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import ClearIcon from '@mui/icons-material/Clear';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import CoffeeIcon from '@mui/icons-material/LocalCafe';
+import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 import { Helmet } from 'react-helmet';
 
 dayjs.extend(isSameOrAfter);
@@ -52,6 +53,8 @@ export default function Home() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [currentSelectedDate, setCurrentSelectedDate] = useState<Dayjs | null>(null);
   const [openAccordions, setOpenAccordions] = useState<Record<string, boolean>>({});
+  const [isPageVisible, setIsPageVisible] = useState(true);
+  const [isSoundEnabled, setIsSoundEnabled] = useState(false);
 
   const minDate = dayjs().startOf('day');
   const maxDate = dayjs().add(1, 'year').endOf('day');
@@ -66,6 +69,25 @@ export default function Home() {
     if (storedFromDate) setFromDate(dayjs(storedFromDate));
     if (storedToDate) setToDate(dayjs(storedToDate));
     if (storedCheckEveryMinute) setCheckEveryMinute(JSON.parse(storedCheckEveryMinute));
+  }, []);
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      setIsPageVisible(!document.hidden);
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const storedValue = localStorage.getItem('isSoundEnabled');
+      setIsSoundEnabled(storedValue ? JSON.parse(storedValue) : false);
+    }
   }, []);
 
   useEffect(() => {
@@ -90,8 +112,11 @@ export default function Home() {
         fetchTimeSlots(selectedLocation.id);
       }, 60000);
     }
-    return () => clearInterval(interval);
-  }, [checkEveryMinute, selectedLocation]);
+    return () => {
+      clearInterval(interval);
+      resetNotifications();
+    };
+  }, [checkEveryMinute, selectedLocation, isPageVisible]);
 
   const fetchTimeSlots = async (locationId: number) => {
     try {
@@ -131,6 +156,20 @@ export default function Home() {
           }
         });
       }
+
+      if (isSoundEnabled && typeof window !== 'undefined') {
+        const notificationSound = new Audio('/notification-sound.mp3');
+        notificationSound.play().catch((error) => console.error('Error playing sound:', error));
+        notificationSound.currentTime = 0;
+      }
+    }
+  };
+
+  const resetNotifications = () => {
+    document.title = 'Speedy NEXUS';
+    const favicon = document.querySelector('link[rel="icon"]') as HTMLLinkElement;
+    if (favicon) {
+      favicon.href = '/path/to/original-favicon.ico';
     }
   };
 
@@ -152,6 +191,14 @@ export default function Home() {
   const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setCheckEveryMinute(event.target.checked);
     localStorage.setItem('checkEveryMinute', JSON.stringify(event.target.checked));
+  };
+
+  const toggleSound = () => {
+    const newValue = !isSoundEnabled;
+    setIsSoundEnabled(newValue);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('isSoundEnabled', JSON.stringify(newValue));
+    }
   };
 
   const handleRefresh = () => {
@@ -204,6 +251,7 @@ export default function Home() {
     <ThemeProvider theme={darkTheme}>
       <Helmet>
         <title>Speedy NEXUS</title>
+        <link rel="icon" type="image/png" href="/favicon.png" />
       </Helmet>
       <Box className="p-4 flex flex-col items-center mb-4">
         <Typography variant="h3" align="center" gutterBottom>
@@ -259,10 +307,15 @@ export default function Home() {
               )}
             </Box>
           </Box>
-          <FormControlLabel
-            control={<Checkbox checked={checkEveryMinute} onChange={handleCheckboxChange} />}
-            label="Check Every Minute and Send Notification if Available"
-          />
+          <Box display="flex" alignItems="center">
+            <FormControlLabel
+              control={<Checkbox checked={checkEveryMinute} onChange={handleCheckboxChange} />}
+              label="Check Every Minute and Send Notification if Available"
+            />
+            <IconButton onClick={toggleSound} color={isSoundEnabled ? 'primary' : 'default'}>
+              <NotificationsActiveIcon />
+            </IconButton>
+          </Box>
           {selectedLocation &&
             (availableSlots.length > 0 ? (
               <Box>
