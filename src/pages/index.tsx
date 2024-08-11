@@ -183,7 +183,7 @@ export default function Home() {
     document.title = 'Speedy NEXUS';
     const favicon = document.querySelector('link[rel="icon"]') as HTMLLinkElement;
     if (favicon) {
-      favicon.href = '/path/to/original-favicon.ico';
+      favicon.href = '/favicon.ico';
     }
   };
 
