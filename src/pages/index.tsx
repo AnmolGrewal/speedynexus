@@ -307,14 +307,20 @@ export default function Home() {
               )}
             </Box>
           </Box>
+          <span className="flex justify-center items-center text-center align-middle text-align-middle">
+            Click the Checkbox to Refresh Page Every Minute
+            <br />
+            Click Notification Icon to play a sound when something pops up
+          </span>
           <Box display="flex" alignItems="center">
             <FormControlLabel
               control={<Checkbox checked={checkEveryMinute} onChange={handleCheckboxChange} />}
-              label="Check Every Minute and Send Notification if Available"
+              label="Check Every Minute"
             />
             <IconButton onClick={toggleSound} color={isSoundEnabled ? 'primary' : 'default'}>
               <NotificationsActiveIcon />
             </IconButton>
+            <span>Send Notification if Available</span>
           </Box>
           {selectedLocation &&
             (availableSlots.length > 0 ? (
