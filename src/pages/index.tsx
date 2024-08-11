@@ -88,6 +88,7 @@ export default function Home() {
       const storedValue = localStorage.getItem('isSoundEnabled');
       setIsSoundEnabled(storedValue ? JSON.parse(storedValue) : false);
     }
+    requestNotificationPermission();
   }, []);
 
   useEffect(() => {
@@ -155,6 +156,9 @@ export default function Home() {
             });
           }
         });
+      } else {
+        // Fallback for browsers that don't support notifications
+        alert('Nexus Interview Slots Available: New interview slots are available in your selected date range.');
       }
 
       if (isSoundEnabled && typeof window !== 'undefined') {
@@ -162,6 +166,16 @@ export default function Home() {
         notificationSound.play().catch((error) => console.error('Error playing sound:', error));
         notificationSound.currentTime = 0;
       }
+    }
+  };
+
+  const requestNotificationPermission = () => {
+    if ('Notification' in window) {
+      Notification.requestPermission().then((permission) => {
+        if (permission === 'granted') {
+          console.log('Notification permission granted');
+        }
+      });
     }
   };
 
@@ -199,6 +213,7 @@ export default function Home() {
     if (typeof window !== 'undefined') {
       localStorage.setItem('isSoundEnabled', JSON.stringify(newValue));
     }
+    requestNotificationPermission();
   };
 
   const handleRefresh = () => {
